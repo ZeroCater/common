@@ -12,7 +12,6 @@ setup(name='zc_common',
       license='MIT',
       packages=[
           'zc_common',
-          'remote_resource',
       ],
       install_requires=[
           'django',
