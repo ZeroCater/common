@@ -24,7 +24,7 @@ class ResourceIdentifierObjectSerializer(serializers.BaseSerializer):
 
     def to_representation(self, instance):
         if isinstance(instance, RemoteResource):
-            return { 'type': instance.type, 'id': instance.id}
+            return {'type': instance.type, 'id': instance.id}
 
         return {
             'type': get_resource_type_from_instance(instance),

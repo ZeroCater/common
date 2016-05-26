@@ -2,6 +2,7 @@ from collections import OrderedDict
 import json
 import six
 
+from django.db.models.manager import BaseManager
 from rest_framework.relations import *
 from rest_framework_json_api.relations import ResourceRelatedField
 
@@ -36,8 +37,15 @@ class RemoteResourceField(ResourceRelatedField):
         self_link = self.get_url('self', self.self_link_view_name, self_kwargs, request)
 
         # Construct the related link using the passed related_resource_path
-        #   self.source is the field name; getattr(obj, self.source) returns the RemoteResource object
-        related_path = self.related_resource_path.format(pk=getattr(obj, self.source).id)
+        # self.source is the field name; getattr(obj, self.source) returns the
+        # RemoteResource object or RelatedManager in the case of a to-many relationship.
+        related_obj = getattr(obj, self.source)
+        if isinstance(related_obj, BaseManager):
+            list_of_ids = related_obj.values_list('pk', flat=True)
+            query_parameters = unquote(urlencode({'ids[]': list_of_ids}, doseq=True))
+            related_path = self.related_resource_path.format(pk=query_parameters)
+        else:
+            related_path = self.related_resource_path.format(pk=related_obj.pk)
         related_link = request.build_absolute_uri(related_path)
 
         if self_link:
