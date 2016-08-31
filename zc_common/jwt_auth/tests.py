@@ -123,7 +123,7 @@ class PermissionTestMixin(object):
         attrs = [attr for attr in itertools.ifilter(lambda x: x.startswith('test_'), dir(self))]
         all_roles = [USER_ROLES, STAFF_ROLES, ANONYMOUS_ROLES, SERVICE_ROLES]
         actions = {'delete': ['DELETE'], 'read': ['GET'], 'write': ['PUT', 'PATCH', 'POST']}
-        extra_actions = {'create': ['POST'], 'update': ['PUT', 'PATCH'],}
+        extra_actions = {'create': ['POST'], 'update': ['PUT', 'PATCH']}
         forbidden_actions = set()
         allowed_actions = set()
 
