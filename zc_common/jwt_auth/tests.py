@@ -1,10 +1,13 @@
 import re
 from importlib import import_module
+
+import itertools
 from mock import Mock
 
 from django.contrib.admindocs.views import extract_views_from_urlpatterns, simplify_regex
 from django.conf import settings
 
+from zc_common.jwt_auth.permissions import USER_ROLES, STAFF_ROLES, ANONYMOUS_ROLES, SERVICE_ROLES
 from .authentication import User
 from .utils import jwt_payload_handler, service_jwt_payload_handler, jwt_encode_handler
 
@@ -108,6 +111,47 @@ class PermissionTestMixin(object):
 
         # Create an instance of the Permission class in child class
         self.permission_obj = None
+
+    def test_revoked_permissions(self):
+        """Test for actions (and thus permissions) that are not allowed by the permission class under test.
+
+           Child classes must declare their test methods as test_read_permission__pass(self). The keyword here
+           is action (read, write, delete, update or create) for which permission is given or denied. If one or
+           more tests for any action exist on the child class, this method will skip checking permissions for that
+           action.
+        """
+        attrs = [attr for attr in itertools.ifilter(lambda x: x.startswith('test_'), dir(self))]
+        all_roles = [USER_ROLES, STAFF_ROLES, ANONYMOUS_ROLES, SERVICE_ROLES]
+        actions = {'delete': ['DELETE'], 'read': ['GET'], 'write': ['PUT', 'PATCH', 'POST']}
+        extra_actions = {'create': ['POST'], 'update': ['PUT', 'PATCH'],}
+        forbidden_actions = set()
+        allowed_actions = set()
+
+        for attr, action in itertools.product(attrs, actions):
+            if attr.find(action) != -1:
+                allowed_actions.add(action)
+                break
+
+        # Check if extra_actions are instead defined
+        if 'write' not in allowed_actions:
+            for attr, action in itertools.product(attrs, extra_actions):
+                if attr.find(action) != -1:
+                    allowed_actions.add(action)
+                    break
+
+        if any([act in allowed_actions for act in extra_actions]):
+            acts = actions.keys()
+            acts.remove('write')
+            forbidden_actions = set(acts + extra_actions.keys()).difference(allowed_actions)
+        else:
+            forbidden_actions = set(actions.keys()).difference(allowed_actions)
+
+        for action in forbidden_actions:
+            http_methods = actions.get(action, extra_actions.get(action))
+            for method, roles in itertools.product(http_methods, all_roles):
+                self.request.method = method
+                self.user.roles = roles
+                self.assert_has_permission(False)
 
     def assert_has_permission(self, expected):
         has_perm = self.permission_obj.has_permission(self.request, self.view)
