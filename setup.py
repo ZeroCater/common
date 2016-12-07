@@ -13,14 +13,14 @@ def get_packages(package):
 
 setup(
     name='zc_common',
-    version='0.2.12',
+    version='0.2.13b2',
     description="Shared code for ZeroCater microservices",
     long_description='',
     keywords='zerocater python util',
     author='ZeroCater',
     author_email='tech@zerocater.com',
     url='https://github.com/ZeroCater/zc_common',
-    download_url='https://github.com/ZeroCater/zc_common/tarball/0.2.12',
+    download_url='https://github.com/ZeroCater/zc_common/tarball/0.2.13b2',
     license='MIT',
     packages=get_packages('zc_common'),
     classifiers=[

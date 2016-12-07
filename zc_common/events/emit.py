@@ -1,7 +1,11 @@
+from __future__ import division
+
 import logging
 import uuid
+import math
 
 from django.conf import settings
+from zc_common.events.utils import event_payload, save_to_s3file
 
 
 logger = logging.getLogger('django')
@@ -55,3 +59,32 @@ def emit_microservice_event(event_type, *args, **kwargs):
         raise EmitEventException("Message may have failed to deliver")
 
     return response
+
+
+def emit_index_rebuild_event(event_name, resource_type, model, batch_size, serializer, queryset=None):
+    """
+    A special helper method to emit events related to index_rebuilding.
+
+    Note: AWS_INDEXER_BUCKET_NAME must be present in your settings.
+    """
+
+    if queryset is None:
+        queryset = model.objects.all()
+
+    objects_count = queryset.count()
+    total_events_count = int(math.ceil(objects_count / batch_size))
+    emitted_events_count = 0
+
+    while emitted_events_count < total_events_count:
+        start_index = emitted_events_count * batch_size
+        end_index = start_index + batch_size
+        data = []
+
+        for instance in queryset.order_by('id')[start_index:end_index]:
+            instance_data = serializer(instance)
+            data.append(instance_data)
+
+        filename = save_to_s3file(data, settings.AWS_INDEXER_BUCKET_NAME)
+        payload = event_payload(resource_type=resource_type, resource_id=None, user_id=None, meta={'s3_key': filename})
+        emit_microservice_event(event_name, **payload)
+        emitted_events_count += 1
