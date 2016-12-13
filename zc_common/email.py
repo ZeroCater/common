@@ -3,31 +3,13 @@ import six
 import time
 import uuid
 
-import boto
-from boto.s3.key import Key
-from django.conf import settings
 from zc_common.events.emit import emit_microservice_event
+from zc_common.s3_tools import save_contents_from_string, save_contents_from_filename
 
 
 S3_BUCKET_NAME = 'zc-mp-email'
 EMAIL_EVENT_TYPE = 'send_email'
 ATTACHMENT_PREFIX = 'attachment_'
-
-
-class MissingCredentialsError(Exception):
-    pass
-
-
-def get_s3_email_bucket():
-    aws_access_key_id = settings.AWS_ACCESS_KEY_ID
-    aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY
-    if not (aws_access_key_id and aws_secret_access_key):
-        msg = 'You need to set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your settings file.'
-        raise MissingCredentialsError(msg)
-
-    conn = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-    bucket = conn.get_bucket(S3_BUCKET_NAME)
-    return bucket
 
 
 def generate_s3_folder_name(email_uuid):
@@ -43,20 +25,6 @@ def generate_s3_content_key(s3_folder_name, content_type, content_name=''):
     return content_key
 
 
-def upload_string_to_s3(bucket, content_key, content):
-    if content:
-        k = Key(bucket)
-        k.key = content_key
-        k.set_contents_from_string(content)
-
-
-def upload_file_to_s3(bucket, content_key, filename):
-    if filename:
-        k = Key(bucket)
-        k.key = content_key
-        k.set_contents_from_filename(filename)
-
-
 def send_email(from_email=None, to=None, cc=None, bcc=None, reply_to=None,
                subject=None, plaintext_body=None, html_body=None, headers=None,
                files=None, attachments=None, user_id=None, resource_type=None, resource_id=None,
@@ -66,7 +34,6 @@ def send_email(from_email=None, to=None, cc=None, bcc=None, reply_to=None,
     attachments: A list of tuples of the format (filename, content_type, content)
     """
     email_uuid = uuid.uuid4()
-    bucket = get_s3_email_bucket()
     s3_folder_name = generate_s3_folder_name(email_uuid)
     if logger:
         msg = '''MICROSERVICE_SEND_EMAIL: Upload email with UUID {}, to {}, from {},
@@ -89,26 +56,26 @@ def send_email(from_email=None, to=None, cc=None, bcc=None, reply_to=None,
     html_body_key = None
     if html_body:
         html_body_key = generate_s3_content_key(s3_folder_name, 'html')
-        upload_string_to_s3(bucket, html_body_key, html_body)
+        save_contents_from_string(html_body, S3_BUCKET_NAME, html_body_key)
 
     plaintext_body_key = None
     if plaintext_body:
         plaintext_body_key = generate_s3_content_key(s3_folder_name, 'plaintext')
-        upload_string_to_s3(bucket, plaintext_body_key, plaintext_body)
+        save_contents_from_string(plaintext_body, S3_BUCKET_NAME, plaintext_body_key)
 
     attachments_keys = []
     if attachments:
         for filename, mimetype, attachment in attachments:
             attachment_key = generate_s3_content_key(s3_folder_name, 'attachment',
                                                      content_name=filename)
-            upload_string_to_s3(bucket, attachment_key, attachment)
+            save_contents_from_string(attachment, S3_BUCKET_NAME, attachment_key)
             attachments_keys.append(attachment_key)
     if files:
         for filepath in files:
             filename = filepath.split('/')[-1]
             attachment_key = generate_s3_content_key(s3_folder_name, 'attachment',
                                                      content_name=filename)
-            upload_file_to_s3(bucket, attachment_key, filepath)
+            save_contents_from_filename(filepath, S3_BUCKET_NAME, attachment_key)
             attachments_keys.append(attachment_key)
 
     event_data = {
