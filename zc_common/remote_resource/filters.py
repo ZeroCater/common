@@ -23,13 +23,17 @@ class JSONAPIFilterBackend(DjangoFilterBackend):
             match = re.search(r'^filter\[(\w+)\]$', param)
             if match:
                 filter_string = match.group(1)
-                field_name = filter_string.split('__').pop(0)
+                filter_string_parts = filter_string.split('__')
+
+                if len(filter_string_parts) > 1:
+                    field_name = '__'.join(filter_string_parts[:-1])
+                else:
+                    field_name = filter_string_parts[0]
 
                 if field_name not in view.filter_fields.keys():
                     return queryset.none()
 
                 if len(filter_string) > 1 and field_name == 'id':
-                    filter_string_parts = filter_string.split('__')
                     filter_string_parts[0] = primary_key
                     query_params['__'.join(filter_string_parts)] = value
 
