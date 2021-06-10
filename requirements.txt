@@ -1,4 +1,4 @@
-django==1.9
+django==2.2.24
 djangorestframework==3.3.3
 djangorestframework-jwt==1.8.0
 uritemplate==0.6
