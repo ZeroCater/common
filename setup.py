@@ -37,6 +37,7 @@ setup(
         'PyJWT>=1.6.4',
         'inflection>=0.3.1',
         'pytz>=2014.2',
-        'python-dateutil>=2.7.3'
+        'python-dateutil>=2.7.3',
+        'django-filter>=2.0.0',
     ]
 )

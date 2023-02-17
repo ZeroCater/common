@@ -12,14 +12,6 @@ from django.utils import timezone
 from zc_common import timezone as common_timezone
 
 
-class TimezoneTest(object):
-    from django.utils.timezone import *
-
-    from zc_common.timezone import is_business_day
-
-    # Override with zc_common
-    from zc_common.timezone import *  # pylint: disable=wildcard-import
-
 class TestTimezoneNow(TestCase):
     def test_getting_back_expected_timezone_by_default(self):
         # Test that we get back the default timezone we expect
