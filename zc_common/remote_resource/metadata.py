@@ -11,7 +11,7 @@ from rest_framework_json_api.relations import ResourceRelatedField
 from rest_framework_json_api.utils import get_related_resource_type
 
 from zc_common.remote_resource.relations import RemoteResourceField
-from zc_common.remote_resource.models import GenericRemoteForeignKey, RemoteForeignKey
+from zc_common.remote_resource.models import RemoteForeignKey
 
 
 class RelationshipMetadata(JSONAPIMetadata):
@@ -22,7 +22,6 @@ class RelationshipMetadata(JSONAPIMetadata):
         related.ReverseOneToOneDescriptor: 'OneToOne',
         OneToOneField: 'OneToOne',
         RemoteForeignKey: 'ManyToOne',
-        GenericRemoteForeignKey: 'ManyToOne'
     })
 
     def get_serializer_info(self, serializer):
