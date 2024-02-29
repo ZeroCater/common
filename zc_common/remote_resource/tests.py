@@ -3,8 +3,9 @@ import datetime
 import dateutil
 from decimal import Decimal
 from django.utils import six
+from django.conf import settings
 from inflection import camelize, underscore, pluralize
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APITransactionTestCase
 import ujson
 
 from zc_common.jwt_auth.authentication import User
@@ -19,7 +20,13 @@ STAFF = [USER_PERMISSION_NAME, STAFF_PERMISSION_NAME]
 SERVICE = [USER_PERMISSION_NAME, SERVICE_PERMISSION_NAME]
 
 
-class ResponseTestCase(APITestCase):
+# APITestCase runs tests in transactions, APITransactionTestCase does not (yes, it seems backwards)
+APITestCaseBaseClass = (
+    APITestCase if getattr(settings, "RUN_TESTS_IN_TRANSACTIONS", False) else APITransactionTestCase
+)
+
+
+class ResponseTestCase(APITestCaseBaseClass):
     SUCCESS_HIGH_LEVEL_KEYS = ['data']
     SUCCESS_DATA_KEYS = ['id', 'type']
 
