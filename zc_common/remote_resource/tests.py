@@ -20,9 +20,10 @@ STAFF = [USER_PERMISSION_NAME, STAFF_PERMISSION_NAME]
 SERVICE = [USER_PERMISSION_NAME, SERVICE_PERMISSION_NAME]
 
 
-# APITestCase runs tests in transactions, APITransactionTestCase does not (yes, it seems backwards)
+# APITestCase runs tests in transactions, APITransactionTestCase does not (yes, it seems backwards). If the setting is
+# not there, default to APITestCase.
 APITestCaseBaseClass = (
-    APITestCase if getattr(settings, "RUN_TESTS_IN_TRANSACTIONS", False) else APITransactionTestCase
+    APITestCase if getattr(settings, "RUN_TESTS_IN_TRANSACTIONS", True) else APITransactionTestCase
 )
 
 
