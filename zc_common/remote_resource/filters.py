@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db.models import BooleanField, FieldDoesNotExist, ForeignKey
 from django.db.models.fields.related import ManyToManyField
 from django import forms
-from django.utils import six
+import six
 
 # DjangoFilterBackend was moved to django-filter and deprecated/moved from DRF in version 3.6
 try:
