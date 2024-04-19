@@ -2,7 +2,7 @@ import datetime
 
 import dateutil
 from decimal import Decimal
-from django.utils import six
+import six
 from django.conf import settings
 from inflection import camelize, underscore, pluralize
 from rest_framework.test import APITestCase, APITransactionTestCase

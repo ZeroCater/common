@@ -9,7 +9,7 @@ https://github.com/django-json-api/django-rest-framework-json-api/blob/develop/r
 """
 from collections import OrderedDict
 
-from django.utils.six.moves.urllib import parse as urlparse
+from six.moves.urllib import parse as urlparse
 from rest_framework.pagination import PageNumberPagination as OldPagination
 from rest_framework.views import Response
 
