@@ -3,7 +3,8 @@ from distutils.util import strtobool
 
 from django.contrib.postgres.forms import SimpleArrayField
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import BooleanField, FieldDoesNotExist, ForeignKey
+from django.db.models import BooleanField, ForeignKey
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.related import ManyToManyField
 from django import forms
 import six
@@ -127,7 +128,7 @@ class JSONAPIFilterBackend(DjangoFilterBackend):
         return filterset_data
 
     def filter_queryset(self, request, queryset, view):
-        filter_class = self.get_filter_class(view, queryset)
+        filter_class = self.get_filterset_class(view, queryset)
 
         filters = []
         for param, value in six.iteritems(request.query_params):
