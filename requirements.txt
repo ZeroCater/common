@@ -7,3 +7,4 @@ requests==2.20.0
 mock==2.0.0
 pytz==2018.9
 python-dateutil==2.6.1
+django-filter==22.1

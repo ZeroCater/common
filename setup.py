@@ -38,6 +38,6 @@ setup(
         'inflection>=0.3.1',
         'pytz>=2014.2',
         'python-dateutil>=2.7.3',
-        'django-filter>=2.0.0',
+        'django-filter>=22.1',
     ]
 )
