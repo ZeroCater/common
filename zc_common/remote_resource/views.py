@@ -24,7 +24,7 @@ class ModelViewSet(viewsets.ModelViewSet):
     """
 
     @property
-    def filter_fields(self):
+    def filterset_fields(self):
         queryset = self.get_queryset()
         return_fields = {}
 
