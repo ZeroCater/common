@@ -72,7 +72,7 @@ class JSONAPIFilterSet(filterset.FilterSet):
 
 
 class JSONAPIFilterBackend(DjangoFilterBackend):
-    default_filter_set = JSONAPIFilterSet
+    filterset_base = JSONAPIFilterSet
 
     # This method takes the filter query string (looks something like ?filter[xxx]=yyy) and parses into parameters
     # that django_filters can interface with.
@@ -139,7 +139,7 @@ class JSONAPIFilterBackend(DjangoFilterBackend):
                 filters.append(parsed_filter_string)
 
                 for filter_ in filters:
-                    if filter_['field_name'] not in view.filter_fields.keys():
+                    if filter_['field_name'] not in view.filterset_fields.keys():
                         return queryset.none()
 
         filterset_data = {filter_['field_name_with_lookup']: filter_['filter_value'] for filter_ in filters}
