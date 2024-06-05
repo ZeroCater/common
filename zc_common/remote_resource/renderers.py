@@ -8,7 +8,7 @@ import ujson
 
 import inflection
 from django.db.models import Manager
-from django.utils import six
+import six
 from rest_framework import relations
 from rest_framework.serializers import BaseSerializer, Serializer, ListSerializer
 from rest_framework.settings import api_settings

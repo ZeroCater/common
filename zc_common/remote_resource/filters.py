@@ -3,10 +3,11 @@ from distutils.util import strtobool
 
 from django.contrib.postgres.forms import SimpleArrayField
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import BooleanField, FieldDoesNotExist, ForeignKey
+from django.db.models import BooleanField, ForeignKey
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.related import ManyToManyField
 from django import forms
-from django.utils import six
+import six
 
 # DjangoFilterBackend was moved to django-filter and deprecated/moved from DRF in version 3.6
 try:
@@ -71,7 +72,7 @@ class JSONAPIFilterSet(filterset.FilterSet):
 
 
 class JSONAPIFilterBackend(DjangoFilterBackend):
-    default_filter_set = JSONAPIFilterSet
+    filterset_base = JSONAPIFilterSet
 
     # This method takes the filter query string (looks something like ?filter[xxx]=yyy) and parses into parameters
     # that django_filters can interface with.
@@ -127,7 +128,7 @@ class JSONAPIFilterBackend(DjangoFilterBackend):
         return filterset_data
 
     def filter_queryset(self, request, queryset, view):
-        filter_class = self.get_filter_class(view, queryset)
+        filter_class = self.get_filterset_class(view, queryset)
 
         filters = []
         for param, value in six.iteritems(request.query_params):
@@ -138,7 +139,7 @@ class JSONAPIFilterBackend(DjangoFilterBackend):
                 filters.append(parsed_filter_string)
 
                 for filter_ in filters:
-                    if filter_['field_name'] not in view.filter_fields.keys():
+                    if filter_['field_name'] not in view.filterset_fields.keys():
                         return queryset.none()
 
         filterset_data = {filter_['field_name_with_lookup']: filter_['filter_value'] for filter_ in filters}
