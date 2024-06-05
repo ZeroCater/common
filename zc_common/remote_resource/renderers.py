@@ -115,7 +115,7 @@ class JSONRenderer(renderers.JSONRenderer):
         included_data = list()
         current_serializer = fields.serializer
         context = current_serializer.context
-        included_serializers = utils.get_included_serializers(current_serializer)
+        included_serializers = getattr(current_serializer, "included_serializers", [])
         included_resources = copy.copy(included_resources)
         included_resources = [inflection.underscore(value) for value in included_resources]
 
@@ -214,7 +214,11 @@ class JSONRenderer(renderers.JSONRenderer):
                         )
                         included_data.append(
                             cls.build_json_resource_obj(
-                                serializer_fields, serializer_resource, nested_resource_instance, resource_type
+                                serializer_fields,
+                                serializer_resource,
+                                nested_resource_instance,
+                                resource_type,
+                                serializer,
                             )
                         )
                         included_data.extend(
@@ -234,7 +238,7 @@ class JSONRenderer(renderers.JSONRenderer):
                     included_data.append(
                         cls.build_json_resource_obj(
                             serializer_fields, serializer_data,
-                            relation_instance, relation_type)
+                            relation_instance, relation_type, field)
                     )
                     included_data.extend(
                         cls.extract_included(
@@ -307,7 +311,8 @@ class JSONRenderer(renderers.JSONRenderer):
                         resource_instance = serializer.instance[position]  # Get current instance
 
                         json_resource_obj = self.build_json_resource_obj(
-                            fields, resource, resource_instance, resource_name)
+                            fields, resource, resource_instance, resource_name, serializer,
+                        )
                         meta = self.extract_meta(serializer, resource)
                         if meta:
                             json_resource_obj.update({'meta': key_formatter()(meta)})
@@ -319,8 +324,9 @@ class JSONRenderer(renderers.JSONRenderer):
                             json_api_included.extend(included)
                 else:
                     resource_instance = serializer.instance
-                    json_api_data = self.build_json_resource_obj(fields, serializer_data,
-                                                                 resource_instance, resource_name)
+                    json_api_data = self.build_json_resource_obj(
+                        fields, serializer_data, resource_instance, resource_name, serializer,
+                    )
 
                     meta = self.extract_meta(serializer, serializer_data)
                     if meta:
