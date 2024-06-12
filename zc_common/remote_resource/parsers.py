@@ -79,6 +79,9 @@ class JSONParser(parsers.JSONParser):
             except ValueError:
                 result = {}
 
+        if not isinstance(result, dict):
+            raise ParseError('Received data is not a valid JSON Object')
+
         data = result.get('data')
 
         if data:
